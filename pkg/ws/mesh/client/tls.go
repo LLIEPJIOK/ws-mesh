@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/LLIEPJIOK/service-mesh/ws/pkg/ws"
+	"github.com/LLIEPJIOK/ws-mesh/pkg/ws"
 )
 
 // TLSConfigFromEnv загружает TLS конфигурацию из переменных окружения

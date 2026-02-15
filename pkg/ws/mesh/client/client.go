@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/LLIEPJIOK/service-mesh/ws/pkg/ws"
+	ws "github.com/LLIEPJIOK/ws-mesh/pkg/ws"
 )
 
 type MeshClient struct {

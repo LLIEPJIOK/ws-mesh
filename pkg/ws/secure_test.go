@@ -16,11 +16,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/LLIEPJIOK/service-mesh/ws/pkg/ws"
+	"github.com/LLIEPJIOK/ws-mesh/pkg/ws"
 )
 
 // generateTestCA создаёт CA сертификат для тестов
-func generateTestCA(t *testing.T) (caCertPEM, caKeyPEM []byte, caCert *x509.Certificate, caKey *ecdsa.PrivateKey) {
+func generateTestCA(
+	t *testing.T,
+) (caCertPEM, caKeyPEM []byte, caCert *x509.Certificate, caKey *ecdsa.PrivateKey) {
 	t.Helper()
 
 	caKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
@@ -41,7 +43,13 @@ func generateTestCA(t *testing.T) (caCertPEM, caKeyPEM []byte, caCert *x509.Cert
 		BasicConstraintsValid: true,
 	}
 
-	caCertDER, err := x509.CreateCertificate(rand.Reader, caTemplate, caTemplate, &caKey.PublicKey, caKey)
+	caCertDER, err := x509.CreateCertificate(
+		rand.Reader,
+		caTemplate,
+		caTemplate,
+		&caKey.PublicKey,
+		caKey,
+	)
 	if err != nil {
 		t.Fatalf("failed to create CA certificate: %v", err)
 	}
@@ -56,7 +64,12 @@ func generateTestCA(t *testing.T) (caCertPEM, caKeyPEM []byte, caCert *x509.Cert
 }
 
 // generateSignedCert создаёт сертификат, подписанный CA
-func generateSignedCert(t *testing.T, id string, caCert *x509.Certificate, caKey *ecdsa.PrivateKey) (certPEM, keyPEM []byte) {
+func generateSignedCert(
+	t *testing.T,
+	id string,
+	caCert *x509.Certificate,
+	caKey *ecdsa.PrivateKey,
+) (certPEM, keyPEM []byte) {
 	t.Helper()
 
 	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
@@ -80,7 +93,13 @@ func generateSignedCert(t *testing.T, id string, caCert *x509.Certificate, caKey
 		BasicConstraintsValid: true,
 	}
 
-	certDER, err := x509.CreateCertificate(rand.Reader, template, caCert, &privateKey.PublicKey, caKey)
+	certDER, err := x509.CreateCertificate(
+		rand.Reader,
+		template,
+		caCert,
+		&privateKey.PublicKey,
+		caKey,
+	)
 	if err != nil {
 		t.Fatalf("failed to create certificate: %v", err)
 	}
@@ -173,7 +192,10 @@ func (pki *testPKI) generateCert(t *testing.T, id string) (certPEM, keyPEM []byt
 	return generateSignedCert(t, id, pki.caCert, pki.caKey)
 }
 
-func setupSecureTestServer(t *testing.T, pki *testPKI) (*ws.SecureServer, *httptest.Server, *ws.TLSConfig) {
+func setupSecureTestServer(
+	t *testing.T,
+	pki *testPKI,
+) (*ws.SecureServer, *httptest.Server, *ws.TLSConfig) {
 	t.Helper()
 
 	serverCertPEM, serverKeyPEM := pki.generateCert(t, "server")

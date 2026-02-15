@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/LLIEPJIOK/service-mesh/ws/pkg/ws"
+	"github.com/LLIEPJIOK/ws-mesh/pkg/ws"
 )
 
 type EchoRequest struct {

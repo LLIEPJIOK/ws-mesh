@@ -102,14 +102,13 @@ func (s *Server) handleConnection(ctx context.Context, conn *websocket.Conn) {
 			return
 		}
 
-		var msg Message
-
-		if err := json.Unmarshal(data, &msg); err != nil {
-			s.logger.Error("failed to unmarshal message", "error", err)
+		msg, err := decodeWireMessage(data)
+		if err != nil {
+			s.logger.Error("failed to decode message", "error", err)
 			continue
 		}
 
-		go s.processRequest(ctx, conn, writeMu, &msg)
+		go s.processRequest(ctx, conn, writeMu, msg)
 	}
 }
 
@@ -146,16 +145,12 @@ func (s *Server) sendError(conn *websocket.Conn, mu *sync.Mutex, requestID uint6
 }
 
 func (s *Server) sendMessage(conn *websocket.Conn, mu *sync.Mutex, msg *Message) {
-	data, err := json.Marshal(msg)
-	if err != nil {
-		s.logger.Error("failed to marshal response", "error", err)
-		return
-	}
+	data := encodeWireMessage(msg)
 
 	mu.Lock()
 	defer mu.Unlock()
 
-	if err := conn.WriteMessage(websocket.TextMessage, data); err != nil {
+	if err := conn.WriteMessage(websocket.BinaryMessage, data); err != nil {
 		s.logger.Error("failed to write message", "error", err)
 	}
 }

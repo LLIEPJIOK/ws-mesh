@@ -2,7 +2,6 @@ package ws
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/url"
@@ -122,10 +121,9 @@ func (c *Client) readLoop() {
 			return
 		}
 
-		var msg Message
-
-		if err := json.Unmarshal(data, &msg); err != nil {
-			c.logger.Error("failed to unmarshal response", "error", err)
+		msg, err := decodeWireMessage(data)
+		if err != nil {
+			c.logger.Error("failed to decode response", "error", err)
 			continue
 		}
 
@@ -139,7 +137,7 @@ func (c *Client) readLoop() {
 		c.pendMu.Unlock()
 
 		if ok {
-			pr.responseCh <- &msg
+			pr.responseCh <- msg
 		} else {
 			c.logger.Warn("received response for unknown request", "id", msg.ID)
 		}
@@ -170,14 +168,7 @@ func (c *Client) Request(ctx context.Context, route string, payload any) (*Messa
 	c.pending[msg.ID] = pr
 	c.pendMu.Unlock()
 
-	data, err := json.Marshal(msg)
-	if err != nil {
-		c.pendMu.Lock()
-		delete(c.pending, msg.ID)
-		c.pendMu.Unlock()
-
-		return nil, fmt.Errorf("failed to marshal request: %w", err)
-	}
+	data := encodeWireMessage(msg)
 
 	c.writeMu.Lock()
 	c.connMu.RLock()
@@ -193,7 +184,7 @@ func (c *Client) Request(ctx context.Context, route string, payload any) (*Messa
 		return nil, ErrConnectionClosed
 	}
 
-	err = conn.WriteMessage(websocket.TextMessage, data)
+	err = conn.WriteMessage(websocket.BinaryMessage, data)
 	c.writeMu.Unlock()
 
 	if err != nil {

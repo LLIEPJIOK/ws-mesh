@@ -69,7 +69,7 @@ func (c *Client) Connect(ctx context.Context) error {
 
 	c.logger.Info("connecting to server", slog.String("url", u.String()))
 
-	conn, _, err := websocket.DefaultDialer.DialContext(ctx, u.String(), nil)
+	conn, _, err := noProxyDialer.DialContext(ctx, u.String(), nil)
 	if err != nil {
 		return fmt.Errorf("dial failed: %w", err)
 	}

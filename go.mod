@@ -1,4 +1,4 @@
-module github.com/LLIEPJIOK/service-mesh/ws
+module github.com/LLIEPJIOK/ws-mesh
 
 go 1.26.0
 

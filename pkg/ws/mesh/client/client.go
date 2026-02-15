@@ -11,7 +11,7 @@ import (
 )
 
 type MeshClient struct {
-	*ws.SecureClient
+	*ws.Client
 }
 
 type Config struct {
@@ -21,23 +21,23 @@ type Config struct {
 }
 
 func New(ctx context.Context, cfg Config) (*MeshClient, error) {
-	address, container, err := getAddress(ctx, cfg.ServiceName, cfg.TargetName)
+	address, _, err := getAddress(ctx, cfg.ServiceName, cfg.TargetName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get address: %w", err)
 	}
 
-	clientCfg := ws.DefaultSecureClientConfig(address)
-	clientCfg.TLS = cfg.TLS
+	clientCfg := ws.DefaultClientConfig(address)
+	// clientCfg.TLS = cfg.TLS
 
 	// Устанавливаем ожидаемый ID партнёра, если не задан
-	if clientCfg.TLS != nil && clientCfg.TLS.ExpectedPeerID == "" {
-		clientCfg.TLS.ExpectedPeerID = container
-	}
+	// if clientCfg.TLS != nil && clientCfg.TLS.ExpectedPeerID == "" {
+	// 	clientCfg.TLS.ExpectedPeerID = container
+	// }
 
-	secureClient := ws.NewSecureClient(clientCfg)
+	client := ws.NewClient(clientCfg)
 
 	return &MeshClient{
-		SecureClient: secureClient,
+		Client: client,
 	}, nil
 }
 
